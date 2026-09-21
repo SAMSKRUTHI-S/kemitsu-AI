@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimetsu AI | Demon Slayer Corps Intelligence</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    <!-- Highlight.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Marked.js for Markdown Formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+</head>
+<body class="app-body breathing-water" id="app-body">
+    <!-- Particle Canvas for Anime Embers & Water Aura -->
+    <canvas id="breathing-canvas"></canvas>
+
+    <!-- Anime Technique Title Splash Banner -->
+    <div id="technique-banner" class="technique-banner hidden">
+        <div class="technique-speedlines"></div>
+        <div class="technique-content">
+            <div class="technique-kanji" id="technique-kanji">全集中</div>
+            <div class="technique-title" id="technique-title">TOTAL CONCENTRATION BREATHING</div>
+            <div class="technique-sub" id="technique-sub">Water Breathing Active</div>
+        </div>
+    </div>
+
+    <!-- Nichirin Blade Multi-Form Slash FX Overlay -->
+    <div id="slash-overlay" class="slash-overlay">
+        <div class="slash-blade slash-blade-1"></div>
+        <div class="slash-blade slash-blade-2"></div>
+        <div class="slash-solar-ring"></div>
+        <svg class="slash-lightning-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+            <path class="lightning-path-1" d="M 100 0 L 350 280 L 220 380 L 520 620 L 400 710 L 800 1000" />
+            <path class="lightning-path-2" d="M 900 0 L 650 300 L 780 420 L 450 680 L 600 780 L 200 1000" />
+        </svg>
+        <div class="slash-sparkles"></div>
+    </div>
+
+    <div class="app-layout">
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <span class="kanji-seal-small">滅</span>
+                    <div class="brand-info">
+                        <h2>KIMETSU AI</h2>
+                        <span class="corps-badge">Corps Kasugai</span>
+                    </div>
+                </div>
+                <button class="icon-btn mobile-close-btn" onclick="toggleSidebar()" title="Close Navigation">✕</button>
+            </div>
+
+            <!-- New Chat / Mission Button -->
+            <div class="sidebar-action">
+                <button class="btn btn-new-chat btn-glow" onclick="startNewChat()">
+                    <span class="btn-icon">⚔️</span>
+                    <span class="btn-text">New Mission Scroll</span>
+                </button>
+            </div>
+
+            <!-- Breathing Style Selector (Changes AI Persona & Visual Theme) -->
+            <div class="sidebar-section">
+                <div class="section-label">
+                    <span>BREATHING TECHNIQUE</span>
+                    <span class="badge-hint">Theme</span>
+                </div>
+                <div class="breathing-selector-grid">
+                    <button type="button" class="breathing-chip active" data-style="Water" onclick="setBreathingStyle('Water')">
+                        <span class="chip-icon">🌊</span> Water
+                    </button>
+                    <button type="button" class="breathing-chip" data-style="Flame" onclick="setBreathingStyle('Flame')">
+                        <span class="chip-icon">🔥</span> Flame
+                    </button>
+                    <button type="button" class="breathing-chip" data-style="Thunder" onclick="setBreathingStyle('Thunder')">
+                        <span class="chip-icon">⚡</span> Thunder
+                    </button>
+                    <button type="button" class="breathing-chip" data-style="Sun" onclick="setBreathingStyle('Sun')">
+                        <span class="chip-icon">☀️</span> Sun
+                    </button>
+                    <button type="button" class="breathing-chip" data-style="Beast" onclick="setBreathingStyle('Beast')">
+                        <span class="chip-icon">🐗</span> Beast
+                    </button>
+                </div>
+            </div>
+
+            <!-- Conversation History List (Scrolls) -->
+            <div class="sidebar-section history-section">
+                <div class="section-label">
+                    <span>MISSION SCROLLS</span>
+                    <span id="scroll-count" class="badge-count">0</span>
+                </div>
+                <div class="chat-history-list" id="chat-history-list">
+                    <!-- Loaded dynamically via JS -->
+                    <div class="history-loading">Gathering scrolls...</div>
+                </div>
+            </div>
+
+            <!-- User Profile & Logout Footer -->
+            <div class="sidebar-footer">
+                <div class="user-profile-card">
+                    <div class="user-avatar">
+                        <span class="avatar-kanji">鬼</span>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name" id="user-display-name">{{ username }}</div>
+                        <div class="user-rank"><span class="rank-gem"></span> {{ rank }}</div>
+                    </div>
+                    <a href="/logout" class="icon-btn logout-btn" title="Leave Headquarters (Logout)" onclick="SoundManager.playSlash()">
+                        <span>🚪</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Backdrop for Mobile -->
+        <div class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+        <!-- ================= MAIN CHAT AREA ================= -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="icon-btn sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <span>☰</span>
+                    </button>
+                    <div class="active-chat-info">
+                        <h1 class="chat-title" id="active-chat-title">New Mission Scroll</h1>
+                        <span class="breathing-indicator-badge" id="breathing-badge">
+                            <span class="indicator-dot"></span>
+                            <span id="breathing-badge-text">Water Breathing Active</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <!-- Model Selector -->
+                    <div class="model-picker-wrapper">
+                        <span class="model-picker-icon">⚡</span>
+                        <select id="model-select" class="model-select" onchange="onModelChange()">
+                            {% for m in models %}
+                            <option value="{{ m.id }}">{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Nichirin Art Trigger -->
+                    <button class="btn btn-art-trigger" onclick="openArtModal()" title="Nichirin Canvas (Image Generator)">
+                        <span>🎨 Generate Art</span>
+                    </button>
+
+                    <!-- Sound Toggle -->
+                    <button class="icon-btn sound-toggle-btn" id="sound-btn" onclick="toggleSound()" title="Toggle Blade & Ambience Sounds">
+                        <span id="sound-icon">🔊</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Messages Container -->
+            <div class="chat-container" id="chat-container">
+                <!-- Welcome Banner (Shown when no messages) -->
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-badge">
+                        <span class="kanji-large">滅</span>
+                    </div>
+                    <h2 class="welcome-title">Demon Slayer Intelligence Terminal</h2>
+                    <p class="welcome-subtitle">
+                        Empowered by Groq ultra-fast Llama-3 inference & Nichirin Canvas image synthesis.
+                        Select a breathing discipline and consult the Corps.
+                    </p>
+
+                    <!-- Prompt Suggestion Cards -->
+                    <div class="starter-cards-grid">
+                        <div class="starter-card" onclick="useStarterPrompt('🌊 Water Breathing: Explain quantum computing in clear, flowing analogies with step-by-step clarity.')">
+                            <div class="card-icon">🌊</div>
+                            <div class="card-content">
+                                <h4>Water Breathing Clarity</h4>
+                                <p>Explain quantum computing in clear, flowing analogies</p>
+                            </div>
+                        </div>
+
+                        <div class="starter-card" onclick="useStarterPrompt('⚡ Thunderclap Speed: Write a clean, high-performance Python script to scrape anime news with error handling.')">
+                            <div class="card-icon">⚡</div>
+                            <div class="card-content">
+                                <h4>Thunderclap Speed Code</h4>
+                                <p>High-performance Python web scraping script</p>
+                            </div>
+                        </div>
+
+                        <div class="starter-card" onclick="useStarterPrompt('🔥 Flame Breathing: Set your heart ablaze and write an epic battle monologue between a Hashira and Upper Rank demon.')">
+                            <div class="card-icon">🔥</div>
+                            <div class="card-content">
+                                <h4>Flame Breathing Passion</h4>
+                                <p>Write an epic Demon Slayer battle monologue</p>
+                            </div>
+                        </div>
+
+                        <div class="starter-card" onclick="triggerArtGenerationStarter('Tanjiro Kamado unleashing Hinokami Kagura solar flame dragon strike')">
+                            <div class="card-icon">🎨</div>
+                            <div class="card-content">
+                                <h4>Nichirin Canvas Art</h4>
+                                <p>Generate Tanjiro Kamado Hinokami Kagura art</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Thread -->
+                <div class="messages-thread" id="messages-thread"></div>
+
+                <!-- Typing / Breathing Indicator -->
+                <div class="typing-indicator hidden" id="typing-indicator">
+                    <div class="typing-avatar">
+                        <div class="tsuba-spinner"></div>
+                        <span class="avatar-kanji">滅</span>
+                    </div>
+                    <div class="typing-bubble">
+                        <div class="sword-sheath-pulse"></div>
+                        <span class="typing-text" id="typing-text">Channeling Total Concentration Breathing...</span>
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <footer class="chat-input-area">
+                <div class="input-capsule">
+                    <!-- Quick Image Trigger -->
+                    <button type="button" class="input-action-btn" onclick="openArtModal()" title="Nichirin Canvas (Create AI Image)">
+                        <span>🎨</span>
+                    </button>
+
+                    <!-- Textarea -->
+                    <textarea 
+                        id="user-input" 
+                        class="chat-textarea" 
+                        placeholder="Send a mission dispatch or type /image <prompt>... (Shift+Enter for new line)" 
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                        oninput="autoResizeTextarea(this)"></textarea>
+
+                    <!-- Send Button -->
+                    <button type="button" class="btn-send" id="btn-send" onclick="sendMessage()" title="Unleash Breathing Strike (Send)">
+                        <span class="send-icon">⚔️</span>
+                    </button>
+                </div>
+                <div class="input-hints">
+                    <span>Press <strong>Enter</strong> to dispatch • <strong>Shift+Enter</strong> for newline • Type <strong>/image</strong> to summon Nichirin Art</span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- ================= NICHIRIN ART GENERATION MODAL ================= -->
+    <div class="modal-overlay hidden" id="art-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span class="modal-icon">🎨</span>
+                    <h3>Nichirin Canvas Art Synthesis</h3>
+                </div>
+                <button class="icon-btn modal-close" onclick="closeArtModal()">✕</button>
+            </div>
+            
+            <div class="modal-body">
+                <p class="modal-desc">
+                    Summon high-fidelity anime or cinematic imagery directly into your mission scroll. Zero configuration required.
+                </p>
+
+                <div class="form-group">
+                    <label for="art-prompt-input">Vision Prompt</label>
+                    <textarea id="art-prompt-input" rows="3" class="chat-textarea" placeholder="e.g. Zenitsu Agatsuma unleashing Thunder Breathing First Form with glowing yellow lightning in a bamboo forest"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="art-style-select">Aesthetic Style</label>
+                    <select id="art-style-select" class="styled-select">
+                        <option value="demon_slayer">Kimetsu no Yaiba Anime Masterpiece (Ufotable Style)</option>
+                        <option value="japanese_ink">Traditional Japanese Sumi-e & Ukiyo-e Ink Wash</option>
+                        <option value="cinematic">Cinematic 8K Realistic Masterpiece</option>
+                        <option value="chibi">Cute Chibi Demon Slayer Anime Style</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeArtModal()">Cancel</button>
+                <button type="button" class="btn btn-primary btn-glow" id="btn-summon-art" onclick="submitArtModal()">
+                    <span class="btn-text">Summon Artwork</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Zoom Modal -->
+    <div class="image-zoom-overlay hidden" id="zoom-modal" onclick="closeZoomModal()">
+        <div class="zoom-content" onclick="event.stopPropagation()">
+            <img id="zoom-image" src="" alt="Enlarged Nichirin Art">
+            <div class="zoom-actions">
+                <a id="zoom-download" href="" target="_blank" download="nichirin_art.jpg" class="btn btn-primary">
+                    <span>⬇️ Download High-Res</span>
+                </a>
+                <button class="btn btn-secondary" onclick="closeZoomModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/sound.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

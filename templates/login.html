@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demon Slayer Corps Portal | Kimetsu AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+</head>
+<body class="login-body breathing-water">
+    <!-- Particle Canvas for Anime Embers & Water Aura -->
+    <canvas id="breathing-canvas"></canvas>
+
+    <!-- Ambient Glow Orbs -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="auth-container">
+        <!-- Demon Slayer Corps Crest & Japanese KanJi Header -->
+        <div class="auth-header">
+            <div class="corps-seal-badge">
+                <span class="kanji-seal">滅</span>
+            </div>
+            <h1 class="brand-title">KIMETSU AI</h1>
+            <p class="brand-subtitle">Demon Slayer Corps Intelligence Portal</p>
+            <div class="tanjiro-stripe-accent"></div>
+        </div>
+
+        <!-- Auth Card -->
+        <div class="glass-card auth-card">
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button type="button" class="tab-btn active" id="tab-login" onclick="switchAuthTab('login')">
+                    <span class="tab-icon">⚔️</span> Sign In
+                </button>
+                <button type="button" class="tab-btn" id="tab-signup" onclick="switchAuthTab('signup')">
+                    <span class="tab-icon">📜</span> Enlist (Sign Up)
+                </button>
+            </div>
+
+            <!-- Error / Notification Alert -->
+            <div id="auth-alert" class="alert-box hidden">
+                <span id="alert-icon">⚠️</span>
+                <span id="alert-message"></span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-username">Warrior Name (Username)</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="login-username" required placeholder="Enter warrior name" autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Secret Seal (Password)</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="login-password" required placeholder="Enter secret password" autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-glow" id="btn-login-submit">
+                    <span class="btn-text">Enter Headquarters</span>
+                    <span class="slash-effect"></span>
+                </button>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form hidden" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signup-username">New Warrior Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="signup-username" required placeholder="e.g. Tanjiro_K" autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-password">Secret Seal (Password)</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="signup-password" required placeholder="At least 4 characters" minlength="4" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-breathing">Preferred Breathing Discipline</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🌊</span>
+                        <select id="signup-breathing" class="styled-select">
+                            <option value="Water">Water Breathing (Mizu no Kokyu) - Adaptive & Calm</option>
+                            <option value="Flame">Flame Breathing (En no Kokyu) - Passionate & Bold</option>
+                            <option value="Thunder">Thunder Breathing (Kaminari no Kokyu) - Ultra Fast</option>
+                            <option value="Sun">Sun Breathing (Hinokami Kagura) - Master Knowledge</option>
+                            <option value="Beast">Beast Breathing (Kedamono no Kokyu) - Fierce & Direct</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-glow" id="btn-signup-submit">
+                    <span class="btn-text">Join Demon Slayer Corps</span>
+                    <span class="slash-effect"></span>
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+
+            <!-- Instant Guest Access -->
+            <button type="button" class="btn btn-secondary btn-block" onclick="handleGuestLogin()" id="btn-guest">
+                <span>🏮 Quick Guest Pass (Instant Access)</span>
+            </button>
+            
+            <div class="auth-footer-notice">
+                <span>Powered by Groq Cloud & FLUX Nichirin Image Synthesis</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Audio / Sound Generator script -->
+    <script src="{{ url_for('static', filename='js/sound.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+    <script>
+        function switchAuthTab(tab) {
+            SoundManager.playClick();
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const tabLogin = document.getElementById('tab-login');
+            const tabSignup = document.getElementById('tab-signup');
+            const alertBox = document.getElementById('auth-alert');
+            alertBox.classList.add('hidden');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                tabLogin.classList.add('active');
+                tabSignup.classList.remove('active');
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                tabLogin.classList.remove('active');
+                tabSignup.classList.add('active');
+            }
+        }
+
+        function showAlert(message, isError = true) {
+            const alertBox = document.getElementById('auth-alert');
+            const alertMsg = document.getElementById('alert-message');
+            const alertIcon = document.getElementById('alert-icon');
+            alertMsg.textContent = message;
+            alertIcon.textContent = isError ? '⚠️' : '✅';
+            alertBox.className = 'alert-box ' + (isError ? 'alert-error' : 'alert-success');
+            alertBox.classList.remove('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login-submit');
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            btn.disabled = true;
+            btn.querySelector('.btn-text').textContent = "Authenticating...";
+            SoundManager.playSlash();
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert(`Welcome back, Slayer ${data.username}! Entering headquarters...`, false);
+                    setTimeout(() => window.location.href = '/', 600);
+                } else {
+                    showAlert(data.message || 'Login failed.');
+                    btn.disabled = false;
+                    btn.querySelector('.btn-text').textContent = "Enter Headquarters";
+                }
+            } catch (err) {
+                showAlert("Network communication error. Please try again.");
+                btn.disabled = false;
+                btn.querySelector('.btn-text').textContent = "Enter Headquarters";
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-signup-submit');
+            const username = document.getElementById('signup-username').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
+            const breathing = document.getElementById('signup-breathing').value;
+
+            btn.disabled = true;
+            btn.querySelector('.btn-text').textContent = "Enlisting...";
+            SoundManager.playSlash();
+
+            try {
+                const res = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, breathing_style: breathing })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert(`Warrior registered! Welcome to the Corps, ${data.username}!`, false);
+                    setTimeout(() => window.location.href = '/', 700);
+                } else {
+                    showAlert(data.message || 'Registration failed.');
+                    btn.disabled = false;
+                    btn.querySelector('.btn-text').textContent = "Join Demon Slayer Corps";
+                }
+            } catch (err) {
+                showAlert("Communication error. Please try again.");
+                btn.disabled = false;
+                btn.querySelector('.btn-text').textContent = "Join Demon Slayer Corps";
+            }
+        }
+
+        async function handleGuestLogin() {
+            const btn = document.getElementById('btn-guest');
+            btn.disabled = true;
+            btn.innerHTML = "<span>🏮 Preparing Guest Scroll...</span>";
+            SoundManager.playSlash();
+
+            try {
+                const res = await fetch('/api/guest', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert(`Guest Pass granted! Welcome, ${data.username}!`, false);
+                    setTimeout(() => window.location.href = '/', 500);
+                } else {
+                    showAlert("Could not create guest pass.");
+                    btn.disabled = false;
+                    btn.innerHTML = "<span>🏮 Quick Guest Pass (Instant Access)</span>";
+                }
+            } catch (err) {
+                showAlert("Connection error.");
+                btn.disabled = false;
+                btn.innerHTML = "<span>🏮 Quick Guest Pass (Instant Access)</span>";
+            }
+        }
+    </script>
+</body>
+</html>
